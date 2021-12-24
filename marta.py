@@ -5,87 +5,67 @@ import datetime
 import wikipedia
 import subprocess as sub 
 import os
+import pyautogui
 
-name = 'Marta'
-listener =  sr.Recognizer()
+escuchar = sr.Recognizer()
 
-engine = pyttsx3.init()
+inicializar = pyttsx3.init()
 
-voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[1].id)
+voices = inicializar.getProperty('voices')
+inicializar.setProperty('voice', voices[1].id)
 
-
-sites={
-          'google': 'google.com',
-          'youtube': 'youtube.com',
-          'gmail': 'mail.google.com',
-          }
+nombre = 'Marta'
 
 
+sites = {
+    'google': 'google.com',
+    'youtube': 'youtube.com',
+    'github': 'github.com'
+}
 
+def habla(texto):
+    inicializar.say(texto)
+    inicializar.runAndWait()
 
-
-def talk(text):
-  engine.say(text)
-  engine.runAndWait()
-
-
-def listen():
+def tomar():
     try:
-      with sr.Microphone() as source:
-        print('Escuchando...')
-        voice = listener.listen(source)
-        rec = listener.recognize_google(voice)
-        rec = rec.lower()
-        if name in rec:
-            rec = rec.replace(name, '')
-        print(rec)
+        with sr.Microphone() as voz:
+            print('Escuchando')
+            voice = escuchar.listen(voz)
+            command = escuchar.recognize_google(voice, language='es-ES')
+            command = command.lower()
+            if nombre in command:
+                command = command.replace(nombre, " ")
+                print(command)
 
     except:
-      pass
-    return rec
+        pass
+    return command
 
-def run():
-   while True:
-    rec = listen()
-    if'play' in rec:
-     music = rec.replace('play', '')
-     talk('Playing'+ music )
-     pywhatkit.playonyt(music)
-    elif 'time' in rec:
-        time = datetime.datetime.now().strftime('%H:%M %p')
-        talk('its'+ time)
-    elif 'search'in rec:
-        order = rec.replace('search', '')
-        info = wikipedia.summary(order, 1)
-        talk(info)
-    elif 'open' in rec:
-        for site in sites:
-            if site in rec:
-                sub.call(f'start chrome.exe {sites[site]}', shell=True)
-                talk(f'opening {site}')
-    elif 'write' in rec:
-        try:
-            with open("nota.txt", 'a') as f:
-                write(f)
-        except FileNotFoundError as e:
-            file = open("nota.txt", 'a')
-            write(file)
-    elif 'finish' in rec:
-        talk('Byee, Dave!')  
-        break
-           
 
-    else :
-        talk("Try Again, Dave")
-    
+def Marta():
+    command = tomar()
+    if 'reproduce' in command:
+        cancion = command.replace('reproduce','')
+        habla('reproduciendo' + cancion)
+        pywhatkit.playonyt(cancion)
 
-def write(f):
-    talk("What do you want me to write, Dave")
-    rec_write = listen()
-    f.write(rec_write + os.linesep)
-    f.close()
-    talk("You can check now, Dave")
-    sub.Popen("nota.txt", shell=True)
-
-run()
+    elif 'hora' in command:
+        time = datetime.datetime.now().strftime('%I:%M %p')
+        print(time)
+        habla('Son las' + time)
+    elif 'wikipedia' in command:
+        busqueda = command.replace('wikipedia', '')
+        informacion = wikipedia.set_lang('es')
+        informacion = wikipedia.summary(busqueda, 1)
+        print(informacion)
+        habla(informacion)
+    elif "pantalla" in command:
+        screenshot = pyautogui.screenshot()
+        screenshot.save('Screenshot.png')
+        habla('capturando la pantalla')
+    else:
+        habla('Recuerde decir mi nombre')
+        
+   
+Marta()
